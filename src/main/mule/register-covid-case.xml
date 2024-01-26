@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="6644307e-a4c7-4cc4-a5a3-542849562709" basePath="uhub-sapi" >
+		<http:listener-connection host="0.0.0.0" port="8086" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="af2c8660-d784-4c2d-a6d3-db998b1ae95a" >
+		<db:my-sql-connection host="127.0.0.1" port="3306" user="root" password="lion" database="myfirst_database"/>
+	</db:config>
+	<flow name="register-covid-caseFlow" doc:id="5150c093-b393-4f47-858f-b3e4a4e1cf95" >
+		<http:listener doc:name="Listener" doc:id="dc4f9a4a-530e-42ae-ab24-0946173ffd7f" config-ref="HTTP_Listener_config" path="register-covid-cases" allowedMethods="POST">
+			<http:response statusCode="#[vars.statusCode]" reasonPhrase="#[vars.statusReason]" />
+		</http:listener>
+		<logger level="INFO" doc:name="start log" doc:id="c8c7e161-bf7c-48fd-9a9f-2b438e86b12d" message="started register covid case flow:  #[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="8c249341-1f6a-4677-9e83-014f62f2387f" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="covidPayload" ><![CDATA[%dw 2.0
+output application/java
+var actionDate = now() as String{format: "yyyy-MM-dd"}
+var owner = "UHIS"
+---
+{
+	source: payload.source,
+	case_type: payload.caseType,
+	first_name: payload.firstName,
+	last_name: payload.lastName,
+	phone: payload.phone,
+	email: payload.email,
+	date_of_birth: payload.dateOfBirth,
+	national_id: payload.nationalID,
+	national_id_type: payload.nationalIDType,
+	street_address: payload.address.streetAddress,
+	city: payload.address.city,
+	state: payload.address.state,
+	postal: payload.address.postal,
+	country: payload.address.country,
+	create_date: actionDate,
+	update_date: actionDate,
+	create_by: owner,
+	update_by: owner
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<db:insert doc:name="Insert covid case master" doc:id="11274b8f-8429-4ca2-9873-8aae00af64c0" config-ref="Database_Config" autoGenerateKeys="true">
+			<db:sql ><![CDATA[INSERT INTO cvd_case_master (source, case_type, first_name, last_name, phone, email, date_of_birth, national_id, national_id_type, street_address,  city, state,  postal, country, create_date, update_date, create_by, update_by) 
+        VALUES 		(:source, :case_type, :first_name, :last_name, :phone, :email, :date_of_birth, :national_id, :national_id_type, :street_address, :city,  :state,  :postal,  :country,  :create_date,  :update_date, :create_by,  :update_by) ]]></db:sql>
+			<db:parameter-types />
+			<db:input-parameters ><![CDATA[#[vars.covidPayload]]]></db:input-parameters>
+			<db:auto-generated-keys-column-names >
+				<db:auto-generated-keys-column-name value="CASE_ID" />
+			</db:auto-generated-keys-column-names>
+		</db:insert>
+		<ee:transform doc:name="prepare response" doc:id="74d5e440-a24d-45a2-adf9-a5cbf9c81647" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	caseID: payload[0].CASE_ID as String
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="statusCode" ><![CDATA[  201]]></ee:set-variable>
+				<ee:set-variable variableName="statusReason" ><![CDATA[ "OK"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="6a8459a4-d6b7-42aa-8c6b-26f1db77a8b4" message="Completed register covid case flow : #[payload]"/>
+	</flow>
+	<flow name="register-covid-caseFlow1" doc:id="c09626d7-a002-4ed7-b1d3-fff30868e910" >
+		<logger level="INFO" doc:name="Logger" doc:id="7a22228c-09ad-474e-b6c1-6c9463e33a22" />
+		<db:select doc:name="Select case_ID" doc:id="dee9784f-3968-49d5-8fd9-7db853e9b254" config-ref="Database_Config">
+			<db:sql><![CDATA[ select max(CASE_ID) as CASE_ID from cvd_case_master where NATIONAL_ID = :nationalID
+]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+	nationalID : vars.covidPayload.national_id
+	
+	}]]]></db:input-parameters>
+		</db:select>
+	</flow>
+</mule>

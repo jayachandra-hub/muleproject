@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="register-covid-case" format="json">
+      <types:shape format="weave" example="examples/uhub-sapi-register-covid-case-request.json"><![CDATA[%dw 2.0
+
+type register_covid_case = {|
+  source: String, 
+  caseType: String, 
+  firstName: String, 
+  lastName: String, 
+  phone: String, 
+  email: String, 
+  dateOfBirth: String, 
+  nationalID: String, 
+  nationalIDType: String, 
+  address: {|
+    streetAddress: String, 
+    city: String, 
+    state: String, 
+    postal: String, 
+    country: String
+  |}
+|} {"example": "{\\\"source\\\":\\\"The johns hopkins hospital\\\",\\\"caseType\\\":\\\"positive\\\",\\\"firstName\\\":\\\"John\\\",\\\"lastName\\\":\\\"Nixon\\\",\\\"phone\\\":\\\"541-754-3010\\\",\\\"email\\\":\\\"john@gmail.com\\\",\\\"dateOfBirth\\\":\\\"1989-04-26\\\",\\\"nationalID\\\":\\\"209-49-6193\\\",\\\"nationalIDType\\\":\\\"SSN\\\",\\\"address\\\":{\\\"streetAddress\\\":\\\"1600 Pennsylvania Avenue NW\\\",\\\"city\\\":\\\"Washington\\\",\\\"state\\\":\\\"DC\\\",\\\"postal\\\":\\\"20500\\\",\\\"country\\\":\\\"USA\\\"}}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="register-covid-outbound" format="json">
+      <types:shape format="weave" example="examples/outbound.json"><![CDATA[%dw 2.0
+
+type register_covid_outbound = {|
+  SOURCE: String, 
+  CASE_TYPE: String, 
+  FIRST_NAME: String, 
+  LAST_NAME: String, 
+  PHONE: String, 
+  EMAIL: String, 
+  DATE_OF_BIRTH: String, 
+  NATIONAL_ID: String, 
+  NATIONAL_ID_TYPE: String, 
+  STREET_ADDRESS: String, 
+  CITY: String, 
+  STATE: String, 
+  POSTAL: String, 
+  COUNTRY: String, 
+  CREATE_DATE: String, 
+  UPDATE_DATE: String, 
+  CREATED_BY: String, 
+  UPDATED_BY: String
+|} {"example": "{\\\"SOURCE\\\":\\\"sjalj\\\",\\\"CASE_TYPE\\\":\\\"aljdkl\\\",\\\"FIRST_NAME\\\":\\\"sjl\\\",\\\"LAST_NAME\\\":\\\"jsdlkjf\\\",\\\"PHONE\\\":\\\"dljlsj\\\",\\\"EMAIL\\\":\\\"jdlj\\\",\\\"DATE_OF_BIRTH\\\":\\\"sdjfjsdlj\\\",\\\"NATIONAL_ID\\\":\\\"djfjsd\\\",\\\"NATIONAL_ID_TYPE\\\":\\\"jai\\\",\\\"STREET_ADDRESS\\\":\\\"jau\\\",\\\"CITY\\\":\\\"jya\\\",\\\"STATE\\\":\\\"kioo\\\",\\\"POSTAL\\\":\\\"mpjna\\\",\\\"COUNTRY\\\":\\\"lopm\\\",\\\"CREATE_DATE\\\":\\\"dlkjalj\\\",\\\"UPDATE_DATE\\\":\\\"djslj\\\",\\\"CREATED_BY\\\":\\\"uskk\\\",\\\"UPDATED_BY\\\":\\\"loprkk\\\"}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#e7e9bf7e-8bcf-44fb-94ac-d87a33114065"/>
+  <types:enrichment select="#8c249341-1f6a-4677-9e83-014f62f2387f">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="register-covid-case"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>
