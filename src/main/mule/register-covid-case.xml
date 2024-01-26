@@ -71,7 +71,7 @@ output application/json
 				<ee:set-variable variableName="statusReason" ><![CDATA[ "OK"]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<logger level="INFO" doc:name="end log" doc:id="6a8459a4-d6b7-42aa-8c6b-26f1db77a8b4" message="Completed register covid case flow : #[payload]"/>
+		<logger level="INFO" doc:name="end logger" doc:id="6a8459a4-d6b7-42aa-8c6b-26f1db77a8b4" message="Completed register covid case flow : #[payload]"/>
 	</flow>
 	<flow name="register-covid-caseFlow1" doc:id="c09626d7-a002-4ed7-b1d3-fff30868e910" >
 		<logger level="INFO" doc:name="Logger" doc:id="7a22228c-09ad-474e-b6c1-6c9463e33a22" />
